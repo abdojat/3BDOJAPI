@@ -14,13 +14,12 @@ const articleSchema = {
     content: String
 }
 
-const Article = mongoose.model("article", articleSchema);
-
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/favicon.ico', (req, res) => res.status(204));
 
+const Article = mongoose.model("article", articleSchema);
 
 //////// all articles requests 
 
@@ -126,7 +125,7 @@ app.route('/todolist').get((req, res) => {
 }).patch((req, res) => {
 
 }).delete((req, res) => {
-    Item.deleteOne({ _id: req.body.id }).exec().then((result) => {
+    Item.deleteOne({ name: req.body.id }).exec().then((result) => {
         res.send(result)
     }).catch((err) => {
         res.send(err)
@@ -157,12 +156,12 @@ app.route('/todolist/:customListName').get((req, res) => {
     List.find({ name: customListName }).exec().then(result => {
         let update = result[0].customListItems;
         update.push(item);
-        List.findOneAndUpdate({ name: customListName }, { $set: { customListItems: update } }).exec().then(()=>{
+        List.findOneAndUpdate({ name: customListName }, { $set: { customListItems: update } }).exec().then(() => {
             res.send('added');
-        }).catch(err=>{
+        }).catch(err => {
             res.send(err);
         })
-    }).catch(err=>{
+    }).catch(err => {
         res.send(err);
     });
 }).put((req, res) => {
@@ -179,12 +178,12 @@ app.route('/todolist/:customListName').get((req, res) => {
                 update.remove(element);
             }
         })
-        List.findOneAndUpdate({ name: customListName }, { $set: { customListItems: update } }).exec().then(()=>{
+        List.findOneAndUpdate({ name: customListName }, { $set: { customListItems: update } }).exec().then(() => {
             res.send('deleted');
-        }).catch(err=>{
+        }).catch(err => {
             res.send(err);
         })
-    }).catch(err=>{
+    }).catch(err => {
         res.send(err);
     });
 });
@@ -264,6 +263,41 @@ app.route('/blogposts/:wantedPostid').get((req, res) => {
 }).delete((req, res) => {
     let wantedPostid = req.params.wantedPostid;
     Post.deleteOne({ _id: wantedPostid }).exec().then(() => {
+        res.send('ok');
+    }).catch((err) => {
+        res.send(err);
+    });
+});
+
+
+
+///////////// Keeper App
+
+const noteSchema = {
+    title: String,
+    content: String
+}
+
+const Note = mongoose.model('Note', noteSchema);
+
+app.route('/notes').get((req, res) => {
+    console.log("poe");
+    Note.find({}).exec().then((result) => {
+        res.send(result);
+    }).catch((err) => {
+        res.send(err);
+    });
+}).post((req, res) => {
+    const { title, content } = req.body;
+    const newNote = new Note({
+        title: title,
+        content: content
+    });
+    newNote.save();
+    res.send('ok');
+}).delete((req, res) => {
+    let noteId = req.body.noteId;
+    Note.deleteOne({ _id: noteId }).exec().then(() => {
         res.send('ok');
     }).catch((err) => {
         res.send(err);
